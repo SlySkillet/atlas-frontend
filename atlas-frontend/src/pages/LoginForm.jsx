@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { login } from './userSlice';
 
 const LoginForm = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleUsernameChange = (event) => {
         const value = event.target.value;
@@ -34,7 +37,10 @@ const LoginForm = () => {
 
         const response = await fetch(loginUserURL, fetchConfig);
         if (response.ok) {
+            const userData = await response.json();
             console.log(`${data.username} is logged in successfully`);
+            localStorage.setItem('user', JSON.stringify(userData));
+            dispatch(login(userData));
             navigate('/');
         }
     };

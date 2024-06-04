@@ -1,7 +1,12 @@
-const Welcome = () => {
-    return (
-        <div>Welcome to Atlas Social</div>
-    )
-}
+import { useSelector } from 'react-redux';
 
-export default Welcome
+const Welcome = () => {
+    const user = useSelector((state) => state.user.user);
+    if (!user) {
+        return <div>Welcome to Atlas Social</div>;
+    } else {
+        return <div>Hello {user.username}! Welcome to Atlas Social</div>;
+    }
+};
+
+export default Welcome;
