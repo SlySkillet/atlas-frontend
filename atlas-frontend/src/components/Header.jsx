@@ -7,7 +7,9 @@ const Header = () => {
             <a className="button" href="/signup">
                 Signup
             </a>
-            <a className="button">Login</a>
+            <a className="button" href="/login">
+                Login
+            </a>
         </div>
     );
 };

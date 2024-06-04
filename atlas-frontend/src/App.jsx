@@ -1,9 +1,10 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import Welcome from './pages/Welcome';
 import SignupForm from './pages/SignupForm';
 import ProfileForm from './pages/ProfileForm';
-import Welcome from './pages/Welcome';
+import LoginForm from './pages/LoginForm';
 
 function App() {
     return (
@@ -17,6 +18,7 @@ function App() {
                         path="/signup/create-profile"
                         element={<ProfileForm />}
                     />
+                    <Route path="/login" element={<LoginForm />} />
                 </Routes>
             </BrowserRouter>
         </div>
