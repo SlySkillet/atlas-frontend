@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { login } from './userSlice';
 
 const SignupForm = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmpassword, setConfirmpassword] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleUsernameChange = (event) => {
         const value = event.target.value;
@@ -48,7 +51,9 @@ const SignupForm = () => {
             };
             const loginResponse = await fetch(loginURL, loginConfig);
             if (loginResponse.ok) {
+                const userData = await response.json();
                 console.log(`${data.username} account created and logged in.`);
+                dispatch(login(userData));
                 navigate('/signup/create-profile');
             }
         }
