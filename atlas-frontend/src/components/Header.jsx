@@ -1,7 +1,7 @@
 import './header.css';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { logout } from '../pages/userSlice';
+import { logout } from '../features/user/userSlice';
 
 const Header = () => {
     const user = useSelector((state) => state.user.user);

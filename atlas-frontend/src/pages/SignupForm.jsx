@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { login } from './userSlice';
+import { login } from '../features/user/userSlice';
 
 const SignupForm = () => {
     const [username, setUsername] = useState('');
@@ -53,6 +53,7 @@ const SignupForm = () => {
             if (loginResponse.ok) {
                 const userData = await response.json();
                 console.log(`${data.username} account created and logged in.`);
+                localStorage.setItem('user', JSON.stringify(userData));
                 dispatch(login(userData));
                 navigate('/signup/create-profile');
             }
