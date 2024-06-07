@@ -35,6 +35,9 @@ const Header = () => {
                     <button className="button" onClick={handleLogout}>
                         Logout
                     </button>
+                    <a className="button" href="/myprofile">
+                        profile
+                    </a>
                 </>
             ) : (
                 <>

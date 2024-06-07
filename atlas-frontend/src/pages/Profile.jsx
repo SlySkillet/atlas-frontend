@@ -45,6 +45,7 @@ const Profile = () => {
     return (
         <div>
             <h1>Profile</h1>
+            <a href="/create-profile">edit profile</a>
             <div>
                 {profile.first_name} {profile.last_name}
             </div>

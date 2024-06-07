@@ -55,7 +55,7 @@ const SignupForm = () => {
                 console.log(`${data.username} account created and logged in.`);
                 localStorage.setItem('user', JSON.stringify(userData));
                 dispatch(login(userData));
-                navigate('/signup/create-profile');
+                navigate('/create-profile');
             }
         }
     };
