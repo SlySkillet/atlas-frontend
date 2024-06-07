@@ -5,6 +5,7 @@ import Welcome from './pages/Welcome';
 import SignupForm from './pages/SignupForm';
 import ProfileForm from './pages/ProfileForm';
 import LoginForm from './pages/LoginForm';
+import Profile from './pages/Profile';
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                         element={<ProfileForm />}
                     />
                     <Route path="/login" element={<LoginForm />} />
+                    <Route path="/profile" element={<Profile />} />
                 </Routes>
             </BrowserRouter>
         </div>
