@@ -5,7 +5,8 @@ import Welcome from './pages/Welcome';
 import SignupForm from './pages/SignupForm';
 import ProfileForm from './pages/ProfileForm';
 import LoginForm from './pages/LoginForm';
-import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
+import BrowseProfiles from './pages/BrowseProfiles';
 
 function App() {
     return (
@@ -17,7 +18,11 @@ function App() {
                     <Route path="/signup" element={<SignupForm />} />
                     <Route path="/create-profile" element={<ProfileForm />} />
                     <Route path="/login" element={<LoginForm />} />
-                    <Route path="/myprofile" element={<Profile />} />
+                    <Route path="/myprofile" element={<UserProfile />} />
+                    <Route
+                        path="/browse-profiles"
+                        element={<BrowseProfiles />}
+                    />
                 </Routes>
             </BrowserRouter>
         </div>

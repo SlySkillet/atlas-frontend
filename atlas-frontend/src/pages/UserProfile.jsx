@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-const Profile = () => {
+const UserProfile = () => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,6 +30,7 @@ const Profile = () => {
         };
         fetchProfile();
     }, [user]);
+    console.log(profile);
 
     if (!user) {
         return <div>log in to view your profile</div>;
@@ -50,8 +51,15 @@ const Profile = () => {
                 {profile.first_name} {profile.last_name}
             </div>
             <div>{profile.bio}</div>
+            <div>{profile.image}</div>
+            <h3>Friends</h3>
+            <div>
+                {profile.friends.map((f) => {
+                    return <p key={f.id}>{f.username}</p>;
+                })}
+            </div>
         </div>
     );
 };
 
-export default Profile;
+export default UserProfile;
