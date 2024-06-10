@@ -8,6 +8,7 @@ import LoginForm from './pages/LoginForm';
 import UserProfile from './pages/UserProfile';
 import BrowseProfiles from './pages/BrowseProfiles';
 import ProfileDetail from './pages/ProfileDetail';
+import BeaconFeed from './pages/BeaconFeed';
 
 function App() {
     return (
@@ -28,6 +29,7 @@ function App() {
                         path="/profile/:profileId"
                         element={<ProfileDetail />}
                     />
+                    <Route path="/beaconfeed" element={<BeaconFeed />} />
                 </Routes>
             </BrowserRouter>
         </div>
