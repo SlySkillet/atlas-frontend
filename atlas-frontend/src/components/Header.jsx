@@ -32,6 +32,7 @@ const Header = () => {
             <h1>Atlas Social</h1>
             {user ? (
                 <>
+                    <p>{user.username}</p>
                     <button className="button" onClick={handleLogout}>
                         Logout
                     </button>
