@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const BrowseProfiles = () => {
     const [profiles, setProfiles] = useState([]);
@@ -39,9 +40,7 @@ const BrowseProfiles = () => {
                             <tr key={p.user.id}>
                                 <td>{p.user.username}</td>
                                 <td>
-                                    <a href={p.user.profile}>
-                                        {p.user.profile}
-                                    </a>
+                                    <Link to={`/profile/${p.id}`}>profile</Link>
                                 </td>
                             </tr>
                         );

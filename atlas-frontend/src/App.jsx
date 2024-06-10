@@ -7,6 +7,7 @@ import ProfileForm from './pages/ProfileForm';
 import LoginForm from './pages/LoginForm';
 import UserProfile from './pages/UserProfile';
 import BrowseProfiles from './pages/BrowseProfiles';
+import ProfileDetail from './pages/ProfileDetail';
 
 function App() {
     return (
@@ -22,6 +23,10 @@ function App() {
                     <Route
                         path="/browse-profiles"
                         element={<BrowseProfiles />}
+                    />
+                    <Route
+                        path="/profile/:profileId"
+                        element={<ProfileDetail />}
                     />
                 </Routes>
             </BrowserRouter>
