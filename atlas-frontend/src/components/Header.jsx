@@ -37,7 +37,16 @@ const Header = () => {
                         Logout
                     </button>
                     <a className="button" href="/myprofile">
-                        profile
+                        my profile
+                    </a>
+                    <a className="button" href="/browse-profiles">
+                        browse
+                    </a>
+                    <a className="button" href="/beaconfeed">
+                        feed
+                    </a>
+                    <a className="button" href="/map">
+                        map
                     </a>
                 </>
             ) : (
