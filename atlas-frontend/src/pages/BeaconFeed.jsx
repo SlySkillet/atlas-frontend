@@ -47,7 +47,8 @@ const BeaconFeed = () => {
                     <tr>
                         <th>Owner</th>
                         <th>Ends</th>
-                        <th>Location</th>
+                        <th>Location.y</th>
+                        <th>Location.x</th>
                         <th>Description</th>
                         <th>Capacity</th>
                     </tr>
@@ -58,7 +59,8 @@ const BeaconFeed = () => {
                             <tr key={b.id}>
                                 <td>{b.owner.user.username}</td>
                                 <td>{b.end_datetime}</td>
-                                <td>{b.location}</td>
+                                <td>{b.location.lat}</td>
+                                <td>{b.location.lng}</td>
                                 <td>{b.description}</td>
                                 <td>{b.capacity}</td>
                             </tr>
