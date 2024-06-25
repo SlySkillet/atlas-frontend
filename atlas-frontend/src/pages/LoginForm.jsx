@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { login } from '../features/user/userSlice';
+// import { login } from '../features/user/userSlice';
+import { loginAndFetchProfile } from '../features/user/thunks';
 
 const LoginForm = () => {
     const [username, setUsername] = useState('');
@@ -26,23 +27,35 @@ const LoginForm = () => {
         data.username = username;
         data.password = password;
 
-        const loginUserURL = `http://localhost:8000/api/login/`;
-        const fetchConfig = {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-
-        const response = await fetch(loginUserURL, fetchConfig);
-        if (response.ok) {
-            const userData = await response.json();
-            console.log(`${data.username} is logged in successfully`);
+        try {
+            const userData = await dispatch(
+                loginAndFetchProfile(data),
+            ).unwrap();
+            console.log(userData);
+            console.log(`${username} was logged in successfully`);
             localStorage.setItem('user', JSON.stringify(userData));
-            dispatch(login(userData));
             navigate('/');
+        } catch (error) {
+            console.error('failed to login: ', error);
         }
+
+        // const loginUserURL = `http://localhost:8000/api/login/`;
+        // const fetchConfig = {
+        //     method: 'POST',
+        //     body: JSON.stringify(data),
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        // };
+
+        // const response = await fetch(loginUserURL, fetchConfig);
+        // if (response.ok) {
+        //     const userData = await response.json();
+        //     console.log(`${data.username} is logged in successfully`);
+        //     localStorage.setItem('user', JSON.stringify(userData));
+        //     dispatch(login(userData));
+        //     navigate('/');
+        // }
     };
     return (
         <div>

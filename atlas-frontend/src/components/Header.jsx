@@ -1,11 +1,15 @@
 import './header.css';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { logout } from '../features/user/userSlice';
+import { useNavigate } from 'react-router-dom';
+import { logoutAndClearProfile } from '../features/user/thunks';
+// import { logout } from '../features/user/userSlice';
+// import { clearProfile } from '../features/user/profileSlice';
 
 const Header = () => {
     const user = useSelector((state) => state.user.user);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleLogout = async (event) => {
         event.preventDefault();
@@ -24,12 +28,14 @@ const Header = () => {
         const response = await fetch(logoutUserURL, fetchConfig);
         if (response.ok) {
             console.log(`${user.username} logged out`);
-            dispatch(logout());
+            // dispatch(logout());
+            dispatch(logoutAndClearProfile());
+            navigate('/');
         }
     };
     return (
         <div className="header-container">
-            <h1>Atlas Social</h1>
+            <h1>Hoppin</h1>
             {user ? (
                 <>
                     <p>{user.username}</p>
