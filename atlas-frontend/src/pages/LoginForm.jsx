@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-// import { login } from '../features/user/userSlice';
 import { loginAndFetchProfile } from '../features/user/thunks';
 
 const LoginForm = () => {
@@ -33,7 +32,6 @@ const LoginForm = () => {
             ).unwrap();
             console.log(userData);
             console.log(`${username} was logged in successfully`);
-            localStorage.setItem('user', JSON.stringify(userData));
             navigate('/');
         } catch (error) {
             console.error('failed to login: ', error);

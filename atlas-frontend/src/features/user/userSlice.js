@@ -3,11 +3,13 @@ import { loginAndFetchProfile } from './thunks';
 
 const savedUser = JSON.parse(localStorage.getItem('user'));
 
+const initialState = {
+    user: savedUser || null,
+};
+
 export const userSlice = createSlice({
     name: 'user',
-    initialState: {
-        user: savedUser || null,
-    },
+    initialState,
     reducers: {
         login: (state, action) => {
             state.user = action.payload;

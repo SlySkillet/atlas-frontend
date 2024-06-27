@@ -15,15 +15,21 @@ export const loginAndFetchProfile = createAsyncThunk(
         });
         const userData = await response.json();
 
+        // add authenticated user to store and localStorage
         dispatch(loginAction(userData));
+        localStorage.setItem('user', JSON.stringify(userData));
 
+        // retrieve authenticated user profile
         const profileResponse = await dispatch(
             profileApi.endpoints.getProfile.initiate(userData.profile_id),
         );
 
+        // add user profile to store and localStorage
         if (profileResponse.data) {
             dispatch(setProfile(profileResponse.data));
         }
+        localStorage.setItem('profile', JSON.stringify(profileResponse.data));
+
         return userData;
     },
 );
