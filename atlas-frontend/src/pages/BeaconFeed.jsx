@@ -34,7 +34,6 @@ const BeaconFeed = () => {
         };
         fetchBeacons();
     }, []);
-    console.log('BEACONS --> ', beacons);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -51,6 +50,7 @@ const BeaconFeed = () => {
                         <th>Location.x</th>
                         <th>Description</th>
                         <th>Capacity</th>
+                        <th>Visibility</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,6 +63,7 @@ const BeaconFeed = () => {
                                 <td>{b.location.lng}</td>
                                 <td>{b.description}</td>
                                 <td>{b.capacity}</td>
+                                <td>{b.visibility}</td>
                             </tr>
                         );
                     })}
