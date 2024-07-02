@@ -9,7 +9,17 @@ export const profileApi = createApi({
         getProfile: builder.query({
             query: (profile_id) => `${profile_id}/`,
         }),
+        updateProfile: builder.mutation({
+            query: ({ profile_id, profileData }) => ({
+                url: `${profile_id}/`,
+                method: 'PUT',
+                body: profileData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }),
+        }),
     }),
 });
 
-export const { useGetProfileQuery } = profileApi;
+export const { useGetProfileQuery, useUpdateProfileMutation } = profileApi;

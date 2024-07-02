@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { login } from '../features/user/userSlice';
+import { loginAndFetchProfile } from '../features/user/thunks';
 
 const SignupForm = () => {
     const [username, setUsername] = useState('');
@@ -40,22 +40,16 @@ const SignupForm = () => {
             },
         };
         const response = await fetch(createUserURL, fetchConfig);
+
         if (response.ok) {
-            const loginURL = `http://localhost:8000/api/login/`;
-            const loginConfig = {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            };
-            const loginResponse = await fetch(loginURL, loginConfig);
-            if (loginResponse.ok) {
-                const userData = await response.json();
-                console.log(`${data.username} account created and logged in.`);
-                localStorage.setItem('user', JSON.stringify(userData));
-                dispatch(login(userData));
+            try {
+                const userData = await dispatch(
+                    loginAndFetchProfile(data),
+                ).unwrap();
+                console.log(`${userData.username} was logged in successfully`);
                 navigate('/create-profile');
+            } catch (error) {
+                console.error('failed to login: ', error);
             }
         }
     };

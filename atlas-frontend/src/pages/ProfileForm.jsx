@@ -1,13 +1,24 @@
-import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+    useGetProfileQuery,
+    useUpdateProfileMutation,
+} from '../features/user/profileApiService';
+import { setProfile } from '../features/user/profileSlice';
 
 const ProfileForm = () => {
     const user = useSelector((state) => state.user.user);
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const {
+        data: profile,
+        error,
+        isLoading,
+    } = useGetProfileQuery(user.profile_id, { skip: !user.profile_id });
+
+    const [updateProfile] = useUpdateProfileMutation();
 
     const [profileFormData, setProfileFormData] = useState({
         first_name: '',
@@ -17,33 +28,15 @@ const ProfileForm = () => {
     });
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            if (user && user.profile) {
-                try {
-                    const response = await fetch(user.profile);
-                    if (response.ok) {
-                        const profileData = await response.json();
-                        setProfile(profileData);
-                        setProfileFormData({
-                            first_name: profileData.first_name || '',
-                            last_name: profileData.last_name || '',
-                            bio: profileData.bio || '',
-                            image: profileData.image || '',
-                        });
-                    } else {
-                        setError('Failed to fetch profile data');
-                    }
-                } catch (error) {
-                    console.error('Error: ', error);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
-            }
-        };
-        fetchProfile();
-    }, [user]);
+        if (profile) {
+            setProfileFormData({
+                first_name: profile.first_name || '',
+                last_name: profile.last_name || '',
+                bio: profile.bio || '',
+                image: profile.image || '',
+            });
+        }
+    }, [profile]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -55,27 +48,25 @@ const ProfileForm = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const createProfileURL = user.profile;
-        const fetchConfig = {
-            method: 'PUT',
-            body: JSON.stringify(profileFormData),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-
-        const response = await fetch(createProfileURL, fetchConfig);
-        if (response.ok) {
-            const profileData = await response.json();
-            console.log(profileData);
-            navigate('/');
+        if (user && user.profile_id) {
+            const { data, error } = await updateProfile({
+                profile_id: user.profile_id,
+                profileData: profileFormData,
+            });
+            if (data) {
+                dispatch(setProfile(data));
+                localStorage.setItem('profile', JSON.stringify(data));
+                navigate('/');
+            } else {
+                console.error(error);
+            }
         }
     };
 
     if (!user) {
         return <div>Log in to edit or create profile</div>;
     }
-    if (loading) {
+    if (isLoading) {
         return <div>Loading...</div>;
     }
     if (error) {
