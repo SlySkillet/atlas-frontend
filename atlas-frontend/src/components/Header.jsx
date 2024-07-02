@@ -3,8 +3,6 @@ import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logoutAndClearProfile } from '../features/user/thunks';
-// import { logout } from '../features/user/userSlice';
-// import { clearProfile } from '../features/user/profileSlice';
 
 const Header = () => {
     const user = useSelector((state) => state.user.user);
