@@ -60,7 +60,7 @@ const BeaconMap = () => {
             onLoad={() => console.log('Maps API has loaded')}
         >
             <Map
-                defaultZoom={15}
+                defaultZoom={13}
                 defaultCenter={center}
                 mapId={mapId}
                 onCameraChanged={(ev) =>
