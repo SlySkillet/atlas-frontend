@@ -14,8 +14,8 @@ import BeaconMap from './pages/Map';
 function App() {
     return (
         <div className="container">
-            <Header />
             <BrowserRouter>
+                <Header />
                 <Routes>
                     <Route path="/" element={<Welcome />} />
                     <Route path="/signup" element={<SignupForm />} />
