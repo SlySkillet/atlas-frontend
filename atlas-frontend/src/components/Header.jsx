@@ -28,7 +28,8 @@ const Header = () => {
         const response = await fetch(logoutUserURL, fetchConfig);
         if (response.ok) {
             console.log(`${user.username} logged out`);
-            // dispatch(logout());
+
+            // remove user and profile from store and localStorage
             dispatch(logoutAndClearProfile());
             navigate('/');
         }
