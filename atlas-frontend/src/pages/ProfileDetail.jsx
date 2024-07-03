@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import getCSRFToken from '../utils/auth';
+import {
+    useGetSentRequestsQuery,
+    useGetReceivedRequestsQuery,
+} from '../features/friendrequests/requestsApiService';
 
 const ProfileDetail = () => {
     // REQUIRES LOGIN: need redirect logic for unauthenticated user
@@ -10,8 +15,14 @@ const ProfileDetail = () => {
     const { profileId } = useParams();
     const user = useSelector((state) => state.user.user);
     const [friend, setFriend] = useState(false);
+    const { data: requestsPending } = useGetSentRequestsQuery();
+    const { data: requestsReceived } = useGetReceivedRequestsQuery();
+
+    console.log('pending --> ', requestsPending);
+    console.log('received --> ', requestsReceived);
 
     // Fetch profile information
+    // Setup with RTKQuery
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -46,8 +57,26 @@ const ProfileDetail = () => {
         }
     }, [profile, user.profile_id]);
 
-    // console.log('FRIEND?? => ', friend);
     console.log(profile);
+
+    const handleAddFriend = async () => {
+        // create friend request instance in django
+        const csrfToken = getCSRFToken();
+        console.log(csrfToken);
+        const requestUrl = `http://localhost:8000/api/profiles/${profileId}/request-friend/`;
+        const fetchConfig = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            credentials: 'include',
+        };
+        const response = await fetch(requestUrl, fetchConfig);
+        const data = await response.json();
+        console.log(data);
+        //
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -60,7 +89,11 @@ const ProfileDetail = () => {
                 {profile.first_name} {profile.last_name}
             </div>
             <div>{profile.bio}</div>
-            {friend ? <button>remove</button> : <button>add</button>}
+            {friend ? (
+                <button>remove</button>
+            ) : (
+                <button onClick={handleAddFriend}>add</button>
+            )}
         </div>
     );
 };
