@@ -5,6 +5,7 @@ export const profileApi = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: 'http://localhost:8000/api/profiles/',
     }),
+
     endpoints: (builder) => ({
         getProfile: builder.query({
             query: (profile_id) => `${profile_id}/`,

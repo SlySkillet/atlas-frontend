@@ -4,17 +4,26 @@ export const requestsApi = createApi({
     reducerPath: 'requestsApi',
     baseQuery: fetchBaseQuery({
         baseUrl: 'http://localhost:8000/api/friendrequests/',
-        prepareHeaders: (headers, { getState }) => {
+        prepareHeaders: (headers) => {
             //
             // getState included but not currently used. Add csrf to store on
             // user login to simplify access to token for authenticated user.
             // Csrf token currently retrieved below.
             //
             const csrfToken = getCSRFToken();
-
+            headers.set('Content-Type', 'application/json');
             if (csrfToken) {
+                // return {
+                //     ...headers,
+                //     'X-CSRFToken': csrfToken,
+                // };
                 headers.set('X-CSRFToken', csrfToken);
+            } else {
+                console.error('token not found');
             }
+            headers.forEach((value, key) => {
+                console.log('TEST --> ', `${key}: ${value}`);
+            });
             return headers;
         },
         credentials: 'include',

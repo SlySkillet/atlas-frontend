@@ -6,6 +6,7 @@ import {
     useGetSentRequestsQuery,
     useGetReceivedRequestsQuery,
 } from '../features/friendrequests/requestsApiService';
+import { useCallback } from 'react';
 
 const ProfileDetail = () => {
     // REQUIRES LOGIN: need redirect logic for unauthenticated user
@@ -15,11 +16,20 @@ const ProfileDetail = () => {
     const { profileId } = useParams();
     const user = useSelector((state) => state.user.user);
     const [friend, setFriend] = useState(false);
-    const { data: requestsPending } = useGetSentRequestsQuery();
+    const [isPending, setIsPending] = useState({
+        pending: false,
+        cancelRequestUrl: null,
+    });
+    const [isRequested, setIsRequested] = useState({
+        requested: false,
+        acceptRequestUrl: null,
+    });
+    const { data: requestsPending, refetch: refetchSentRequests } =
+        useGetSentRequestsQuery();
     const { data: requestsReceived } = useGetReceivedRequestsQuery();
 
-    console.log('pending --> ', requestsPending);
-    console.log('received --> ', requestsReceived);
+    // console.log('pending --> ', requestsPending);
+    // console.log('received --> ', requestsReceived);
 
     // Fetch profile information
     // Setup with RTKQuery
@@ -57,7 +67,37 @@ const ProfileDetail = () => {
         }
     }, [profile, user.profile_id]);
 
-    console.log(profile);
+    // Check if current user has sent a request to this profile
+    useEffect(() => {
+        if (requestsPending) {
+            for (let req of requestsPending) {
+                if (req.to_user_profile_id === parseInt(profileId)) {
+                    setIsPending({
+                        pending: true,
+                        cancelRequestUrl: req.request_detail,
+                    });
+                }
+            }
+        }
+    }, [requestsPending, profileId]);
+
+    console.log('pending --> ', isPending);
+
+    // Check if this profile has requested current user
+    useEffect(() => {
+        if (requestsReceived) {
+            for (let req of requestsReceived) {
+                if (req.from_user_profile_id === parseInt(profileId)) {
+                    setIsRequested({
+                        requested: true,
+                        acceptRequestUrl: req.request_accept,
+                    });
+                }
+            }
+        }
+    }, [requestsReceived, profileId]);
+
+    console.log('requested --> ', isRequested);
 
     const handleAddFriend = async () => {
         // create friend request instance in django
@@ -73,9 +113,60 @@ const ProfileDetail = () => {
             credentials: 'include',
         };
         const response = await fetch(requestUrl, fetchConfig);
-        const data = await response.json();
-        console.log(data);
-        //
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            refetchSentRequests();
+        }
+    };
+
+    const handleCancelRequest = async () => {
+        const csrfToken = getCSRFToken();
+        const requestUrl = isPending.cancelRequestUrl;
+        const fetchConfig = {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            credentials: 'include',
+        };
+        const response = await fetch(requestUrl, fetchConfig);
+        if (response.ok) {
+            console.log(response.status, 'request deleted');
+            setIsPending({
+                pending: false,
+                cancelRequestUrl: null,
+            });
+            refetch();
+        }
+        console.log(response);
+    };
+
+    const addFriendActionButton = (isPending, isRequested) => {
+        // Determines the action given to the user depending on the non-friend status.
+        // Function reads if a friend request for this profile exists and if the current
+        // user is the received the request or initiated the request. Actions to cancel a
+        // pending request, accept a received request, or create a new request are provided
+        // accordingly
+
+        if (isPending.pending) {
+            return (
+                <div>
+                    pending...{' '}
+                    <button onClick={handleCancelRequest}>cancel</button>
+                </div>
+            );
+        } else if (isRequested.requested) {
+            return (
+                <div>
+                    {profile.user.username} requested to add you as a friend.{' '}
+                    <button>accept</button>
+                </div>
+            );
+        } else {
+            return <button onClick={handleAddFriend}>add</button>;
+        }
     };
 
     if (loading) {
@@ -89,11 +180,18 @@ const ProfileDetail = () => {
                 {profile.first_name} {profile.last_name}
             </div>
             <div>{profile.bio}</div>
-            {friend ? (
+            <div>
+                {friend ? (
+                    <button>remove</button>
+                ) : (
+                    addFriendActionButton(isPending, isRequested)
+                )}
+            </div>
+            {/* {friend ? (
                 <button>remove</button>
             ) : (
                 <button onClick={handleAddFriend}>add</button>
-            )}
+            )} */}
         </div>
     );
 };
