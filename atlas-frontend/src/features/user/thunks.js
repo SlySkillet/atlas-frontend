@@ -2,16 +2,21 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { login as loginAction, logout as logoutAction } from './userSlice';
 import { setProfile, clearProfile } from './profileSlice';
 import { profileApi } from './profileApiService';
+import getCSRFToken from '../../utils/auth';
 
 export const loginAndFetchProfile = createAsyncThunk(
     'user/loginAndFetchProfile',
     async (userCredentials, { dispatch }) => {
+        const csrfToken = getCSRFToken();
+        console.log('token', csrfToken);
         const response = await fetch('http://localhost:8000/api/login/', {
             method: 'POST',
             body: JSON.stringify(userCredentials),
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': `${csrfToken}`,
             },
+            credentials: 'include',
         });
         const userData = await response.json();
 
