@@ -6,7 +6,6 @@ import {
     useGetSentRequestsQuery,
     useGetReceivedRequestsQuery,
 } from '../features/friendrequests/requestsApiService';
-import { useCallback } from 'react';
 
 const ProfileDetail = () => {
     // REQUIRES LOGIN: need redirect logic for unauthenticated user
@@ -23,13 +22,12 @@ const ProfileDetail = () => {
     const [isRequested, setIsRequested] = useState({
         requested: false,
         acceptRequestUrl: null,
+        rejectRequestUrl: null,
     });
     const { data: requestsPending, refetch: refetchSentRequests } =
         useGetSentRequestsQuery();
-    const { data: requestsReceived } = useGetReceivedRequestsQuery();
-
-    // console.log('pending --> ', requestsPending);
-    // console.log('received --> ', requestsReceived);
+    const { data: requestsReceived, refetch: refetchReceivedRequests } =
+        useGetReceivedRequestsQuery();
 
     // Fetch profile information
     // Setup with RTKQuery
@@ -91,6 +89,7 @@ const ProfileDetail = () => {
                     setIsRequested({
                         requested: true,
                         acceptRequestUrl: req.request_accept,
+                        rejectRequestUrl: req.request_reject,
                     });
                 }
             }
@@ -99,6 +98,7 @@ const ProfileDetail = () => {
 
     console.log('requested --> ', isRequested);
 
+    // BUTTONS AND CLICK HANDLERS
     const handleAddFriend = async () => {
         // create friend request instance in django
         const csrfToken = getCSRFToken();
@@ -117,6 +117,7 @@ const ProfileDetail = () => {
             const data = await response.json();
             console.log(data);
             refetchSentRequests();
+            // update profile state in store
         }
     };
 
@@ -138,17 +139,68 @@ const ProfileDetail = () => {
                 pending: false,
                 cancelRequestUrl: null,
             });
-            refetch();
+            refetchSentRequests();
+            // update profile state in store
         }
         console.log(response);
+    };
+
+    const handleAcceptRequest = async () => {
+        const csrfToken = getCSRFToken();
+        const requestUrl = isRequested.acceptRequestUrl;
+        const fetchConfig = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            credentials: 'include',
+        };
+        const response = await fetch(requestUrl, fetchConfig);
+        if (response.ok) {
+            console.log(response.status, 'request accepted');
+            setIsRequested({
+                pending: false,
+                acceptRequestUrl: null,
+                rejectRequestUrl: null,
+            });
+            refetchReceivedRequests();
+            setFriend(true);
+            // update profile state in store
+        }
+    };
+
+    // HANDLE REJECT REQUEST
+
+    const handleRejectRequest = async () => {
+        const csrfToken = getCSRFToken();
+        const requestUrl = isRequested.rejectRequestUrl;
+        const fetchConfig = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+        };
+        const response = await fetch(requestUrl, fetchConfig);
+        if (response.ok) {
+            console.log(response.status, 'request rejected');
+            setIsRequested({
+                pending: false,
+                acceptRequestUrl: null,
+                rejectRequestUrl: null,
+            });
+            refetchReceivedRequests();
+            setFriend(false);
+        }
     };
 
     const addFriendActionButton = (isPending, isRequested) => {
         // Determines the action given to the user depending on the non-friend status.
         // Function reads if a friend request for this profile exists and if the current
-        // user is the received the request or initiated the request. Actions to cancel a
-        // pending request, accept a received request, or create a new request are provided
-        // accordingly
+        // user received the request or initiated the request. Actions to cancel a
+        // pending request, accept a received request, reject a received request, or create
+        // a new request are provided accordingly
 
         if (isPending.pending) {
             return (
@@ -161,13 +213,16 @@ const ProfileDetail = () => {
             return (
                 <div>
                     {profile.user.username} requested to add you as a friend.{' '}
-                    <button>accept</button>
+                    <button onClick={handleAcceptRequest}>accept</button>
+                    <button onClick={handleRejectRequest}>reject</button>
                 </div>
             );
         } else {
             return <button onClick={handleAddFriend}>add</button>;
         }
     };
+
+    // PAGE RENDERING
 
     if (loading) {
         return <div>Loading...</div>;
