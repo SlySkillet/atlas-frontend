@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const savedProfile = localStorage.getItem('profile');
+const savedProfile = JSON.parse(localStorage.getItem('profile'));
 
 const initialState = {
     profile: savedProfile || null,
