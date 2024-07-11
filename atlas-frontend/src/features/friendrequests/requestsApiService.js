@@ -21,9 +21,9 @@ export const requestsApi = createApi({
             } else {
                 console.error('token not found');
             }
-            headers.forEach((value, key) => {
-                console.log('TEST --> ', `${key}: ${value}`);
-            });
+            // headers.forEach((value, key) => {
+            //     console.log('TEST --> ', `${key}: ${value}`);
+            // });
             return headers;
         },
         credentials: 'include',
@@ -35,8 +35,17 @@ export const requestsApi = createApi({
         getReceivedRequests: builder.query({
             query: () => 'received/',
         }),
+        cancelSentRequest: builder.mutation({
+            query: (reqId) => ({
+                url: `${reqId}/`,
+                method: 'DELETE',
+            }),
+        }),
     }),
 });
 
-export const { useGetSentRequestsQuery, useGetReceivedRequestsQuery } =
-    requestsApi;
+export const {
+    useGetSentRequestsQuery,
+    useGetReceivedRequestsQuery,
+    useCancelSentRequestMutation,
+} = requestsApi;

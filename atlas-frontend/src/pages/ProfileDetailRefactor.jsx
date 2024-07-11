@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import {
     useGetReceivedRequestsQuery,
     useGetSentRequestsQuery,
+    useCancelSentRequestMutation,
 } from '../features/friendrequests/requestsApiService';
 import {
     setSentRequests,
@@ -71,8 +72,12 @@ const ProfileDetail = () => {
     // CHECK FRIEND REQUEST STATUS: check if user has either received or
     // sent a request to this profile
     // imports
-    const { data: requestsPending } = useGetSentRequestsQuery();
-    const [isRequestPending, setIsRequestPending] = useState(false);
+    const { data: requestsPending, refetch: refetchRequestsPending } =
+        useGetSentRequestsQuery();
+    const [isRequestPending, setIsRequestPending] = useState({
+        isPending: false,
+        cancelRequestId: null,
+    });
 
     const { data: requestsReceived } = useGetReceivedRequestsQuery();
     const [isRequestReceived, setIsRequestReceived] = useState(false);
@@ -88,11 +93,18 @@ const ProfileDetail = () => {
             if (requestsPending) {
                 for (let req of requestsPending) {
                     if (req.to_user_profile_id === parseInt(profileId)) {
-                        setIsRequestPending(true);
-                    } else {
-                        setIsRequestPending(false);
+                        setIsRequestPending({
+                            isPending: true,
+                            cancelRequestId: req.id,
+                        });
+                        break;
                     }
                 }
+            } else {
+                setIsRequestPending({
+                    isPending: false,
+                    cancelRequestId: null,
+                });
             }
         };
         checkForSentRequest();
@@ -119,11 +131,22 @@ const ProfileDetail = () => {
         checkForReceivedRequest();
     }, [requestsReceived, profileId]);
 
-    const addFriendActionButton = (isRequestPending) => {
-        if (isRequestPending) {
+    const renderNonFriendActionButton = (isRequestPending) => {
+        // Helper function to determine the appropriate action button depending on
+        // any existing friend requests for the user and the displayed profile
+        if (isRequestPending.isPending) {
             return (
                 <div>
-                    pending...<button>cancel request</button>
+                    pending...
+                    <button
+                        onClick={() =>
+                            handleCancelPendingRequest(
+                                isRequestPending.cancelRequestId,
+                            )
+                        }
+                    >
+                        cancel request
+                    </button>
                 </div>
             );
         } else if (isRequestReceived) {
@@ -146,6 +169,19 @@ const ProfileDetail = () => {
     // request friend
 
     // cancel friend request (sent)
+    const [cancelSentRequest] = useCancelSentRequestMutation();
+    const handleCancelPendingRequest = async (reqId) => {
+        try {
+            await cancelSentRequest(reqId).unwrap();
+            refetchRequestsPending();
+            setIsRequestPending({
+                isPending: false,
+                cancelRequestId: null,
+            });
+        } catch (error) {
+            console.error('Failed to cancel request', error);
+        }
+    };
 
     // reject friend request (received)
 
@@ -167,7 +203,7 @@ const ProfileDetail = () => {
                 {isFriend ? (
                     <button>remove</button>
                 ) : (
-                    addFriendActionButton(isRequestPending)
+                    renderNonFriendActionButton(isRequestPending)
                 )}
             </div>
         </div>
