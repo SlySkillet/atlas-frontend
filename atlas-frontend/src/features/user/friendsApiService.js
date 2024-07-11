@@ -23,10 +23,16 @@ export const friendsApi = createApi({
                 url: 'friends/',
             }),
         }),
+        requestFriend: builder.mutation({
+            query: (profileId) => ({
+                url: `profiles/${profileId}/request-friend/`,
+                method: 'POST',
+            }),
+        }),
         // test this
         removeFriend: builder.mutation({
             query: (profileId) => ({
-                url: `/friends/remove/${profileId}`,
+                url: `friends/remove/${profileId}`,
                 method: 'POST',
             }),
         }),
@@ -34,4 +40,4 @@ export const friendsApi = createApi({
     // add additional endpoints for loading, error, etc.
 });
 
-export const { useGetFriendsQuery } = friendsApi;
+export const { useGetFriendsQuery, useRequestFriendMutation } = friendsApi;

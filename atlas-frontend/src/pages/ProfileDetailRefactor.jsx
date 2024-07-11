@@ -1,6 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useGetFriendsQuery } from '../features/user/friendsApiService';
+import {
+    useGetFriendsQuery,
+    useRequestFriendMutation,
+} from '../features/user/friendsApiService';
 import { setFriends } from '../features/user/friendsSlice';
 import { useDispatch } from 'react-redux';
 import {
@@ -156,7 +159,11 @@ const ProfileDetail = () => {
                 </div>
             );
         } else {
-            return <button>add friend</button>;
+            return (
+                <button onClick={() => handleRequestFriend(profile.id)}>
+                    add friend
+                </button>
+            );
         }
     };
 
@@ -164,9 +171,24 @@ const ProfileDetail = () => {
 
     // USER ACTION HANDLERS
 
+    // add friend
+
     // remove friend
 
     // request friend
+    const [requestFriend] = useRequestFriendMutation();
+    const handleRequestFriend = async (profileId) => {
+        try {
+            await requestFriend(profileId).unwrap();
+            refetchRequestsPending();
+            setIsRequestPending({
+                isPending: false,
+                cancelRequestId: null,
+            });
+        } catch (error) {
+            console.error('Failed to add friend', error);
+        }
+    };
 
     // cancel friend request (sent)
     const [cancelSentRequest] = useCancelSentRequestMutation();
