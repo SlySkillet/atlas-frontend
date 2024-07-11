@@ -41,6 +41,18 @@ export const requestsApi = createApi({
                 method: 'DELETE',
             }),
         }),
+        acceptRequest: builder.mutation({
+            query: (reqId) => ({
+                url: `${reqId}/accept/`,
+                method: 'POST',
+            }),
+        }),
+        rejectRequest: builder.mutation({
+            query: (reqId) => ({
+                url: `${reqId}/reject/`,
+                method: 'POST',
+            }),
+        }),
     }),
 });
 
@@ -48,4 +60,6 @@ export const {
     useGetSentRequestsQuery,
     useGetReceivedRequestsQuery,
     useCancelSentRequestMutation,
+    useAcceptRequestMutation,
+    useRejectRequestMutation,
 } = requestsApi;

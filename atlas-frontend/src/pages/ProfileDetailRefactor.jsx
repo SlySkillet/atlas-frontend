@@ -11,6 +11,8 @@ import {
     useGetReceivedRequestsQuery,
     useGetSentRequestsQuery,
     useCancelSentRequestMutation,
+    useAcceptRequestMutation,
+    useRejectRequestMutation,
 } from '../features/friendrequests/requestsApiService';
 import {
     setSentRequests,
@@ -84,8 +86,12 @@ const ProfileDetail = () => {
         cancelRequestId: null,
     });
 
-    const { data: requestsReceived } = useGetReceivedRequestsQuery();
-    const [isRequestReceived, setIsRequestReceived] = useState(false);
+    const { data: requestsReceived, refetch: refetchRequestsReceived } =
+        useGetReceivedRequestsQuery();
+    const [isRequestReceived, setIsRequestReceived] = useState({
+        isRequested: false,
+        requestId: null,
+    });
 
     useEffect(() => {
         if (requestsPending) {
@@ -98,6 +104,9 @@ const ProfileDetail = () => {
             if (requestsPending) {
                 for (let req of requestsPending) {
                     if (req.to_user_profile_id === parseInt(profileId)) {
+                        // NOTE FOR TESTING: check what happens with a large list
+                        // of pending requests where this conditional is met and
+                        // not met
                         setIsRequestPending({
                             isPending: true,
                             cancelRequestId: req.id,
@@ -106,6 +115,7 @@ const ProfileDetail = () => {
                     }
                 }
             } else {
+                // NOTE FOR REFACTORING: test if this check is necessary
                 setIsRequestPending({
                     isPending: false,
                     cancelRequestId: null,
@@ -126,11 +136,18 @@ const ProfileDetail = () => {
             if (requestsReceived) {
                 for (let req of requestsReceived) {
                     if (req.from_user_profile_id === parseInt(profileId)) {
-                        setIsRequestReceived(true);
-                    } else {
-                        setIsRequestReceived(false);
+                        setIsRequestReceived({
+                            isRequested: true,
+                            requestId: req.id,
+                        });
+                        break;
                     }
                 }
+            } else {
+                setIsRequestReceived({
+                    isRequested: false,
+                    requestId: null,
+                });
             }
         };
         checkForReceivedRequest();
@@ -154,10 +171,23 @@ const ProfileDetail = () => {
                     </button>
                 </div>
             );
-        } else if (isRequestReceived) {
+        } else if (isRequestReceived.isRequested) {
             return (
                 <div>
-                    <button>accept</button> <button>reject</button>{' '}
+                    <button
+                        onClick={() =>
+                            handleAcceptRequest(isRequestReceived.requestId)
+                        }
+                    >
+                        accept
+                    </button>{' '}
+                    <button
+                        onClick={() =>
+                            handleRejectRequest(isRequestReceived.requestId)
+                        }
+                    >
+                        reject
+                    </button>{' '}
                 </div>
             );
         } else {
@@ -215,9 +245,37 @@ const ProfileDetail = () => {
         }
     };
 
-    // reject friend request (received)
-
     // accept friend request (received)
+    const [acceptRequest] = useAcceptRequestMutation();
+    const handleAcceptRequest = async (reqId) => {
+        try {
+            await acceptRequest(reqId).unwrap();
+            refetchFriendsList();
+            refetchRequestsReceived();
+            setIsRequestReceived({
+                isRequested: false,
+                requestId: null,
+            });
+            setIsFriend(true);
+        } catch (error) {
+            console.error('Failed to accept request', error);
+        }
+    };
+
+    // reject friend request (received)
+    const [rejectRequest] = useRejectRequestMutation();
+    const handleRejectRequest = async (reqId) => {
+        try {
+            await rejectRequest(reqId).unwrap();
+            refetchRequestsReceived();
+            setIsRequestReceived({
+                isRequested: false,
+                requestId: null,
+            });
+        } catch (error) {
+            console.error('Failed to reject request', error);
+        }
+    };
 
     // RENDER PAGE
     if (componentLoading) {
