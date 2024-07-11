@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import {
     useGetFriendsQuery,
     useRequestFriendMutation,
+    useRemoveFriendMutation,
 } from '../features/user/friendsApiService';
 import { setFriends } from '../features/user/friendsSlice';
 import { useDispatch } from 'react-redux';
@@ -46,7 +47,8 @@ const ProfileDetail = () => {
 
     // NOTE: this can break off into another component to handle loading,
     // and error to sepparate concerns.
-    const { data: friendsList } = useGetFriendsQuery();
+    const { data: friendsList, refetch: refetchFriendsList } =
+        useGetFriendsQuery();
     const dispatch = useDispatch();
     const [isFriend, setIsFriend] = useState(false);
 
@@ -171,9 +173,17 @@ const ProfileDetail = () => {
 
     // USER ACTION HANDLERS
 
-    // add friend
-
     // remove friend
+    const [removeFriend] = useRemoveFriendMutation();
+    const handleRemoveFriend = async (profileId) => {
+        try {
+            await removeFriend(profileId).unwrap();
+            refetchFriendsList();
+            setIsFriend(false);
+        } catch (error) {
+            console.error('Failed to remove friend', error);
+        }
+    };
 
     // request friend
     const [requestFriend] = useRequestFriendMutation();
@@ -223,7 +233,9 @@ const ProfileDetail = () => {
             <div>{profile.bio}</div>
             <div>
                 {isFriend ? (
-                    <button>remove</button>
+                    <button onClick={() => handleRemoveFriend(profileId)}>
+                        remove
+                    </button>
                 ) : (
                     renderNonFriendActionButton(isRequestPending)
                 )}

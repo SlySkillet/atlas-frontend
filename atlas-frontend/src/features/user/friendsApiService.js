@@ -32,7 +32,7 @@ export const friendsApi = createApi({
         // test this
         removeFriend: builder.mutation({
             query: (profileId) => ({
-                url: `friends/remove/${profileId}`,
+                url: `friends/remove/${profileId}/`,
                 method: 'POST',
             }),
         }),
@@ -40,4 +40,8 @@ export const friendsApi = createApi({
     // add additional endpoints for loading, error, etc.
 });
 
-export const { useGetFriendsQuery, useRequestFriendMutation } = friendsApi;
+export const {
+    useGetFriendsQuery,
+    useRequestFriendMutation,
+    useRemoveFriendMutation,
+} = friendsApi;
