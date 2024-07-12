@@ -77,7 +77,33 @@ const UserProfile = () => {
 
     // --- Accept Request --- //
 
+    const [
+        acceptRequest,
+        { isLoading: isAcceptRequestLoading, error: acceptRequestError },
+    ] = useAcceptRequestMutation();
+    const handleAcceptRequest = async (reqId) => {
+        try {
+            await acceptRequest(reqId).unwrap();
+            refetchFriendRequests();
+            refetchFriendsList();
+        } catch (error) {
+            console.error('Failed to accept request', error);
+        }
+    };
+
     // --- Reject Request --- //
+    const [
+        rejectRequest,
+        { isLoading: isRejectRequestLoading, error: rejectRequestError },
+    ] = useRejectRequestMutation();
+    const handleRejectRequest = async (reqId) => {
+        try {
+            await rejectRequest(reqId).unwrap();
+            refetchFriendRequests();
+        } catch (error) {
+            console.error('Failed to reject request', error);
+        }
+    };
 
     // =============================PAGE RENDERING================================
     if (!user) {
@@ -129,8 +155,34 @@ const UserProfile = () => {
                                 >
                                     view profile
                                 </Link>
-                                <button>accept</button>
-                                <button>reject</button>
+                                <button
+                                    onClick={() =>
+                                        handleAcceptRequest(request.id)
+                                    }
+                                >
+                                    {isAcceptRequestLoading
+                                        ? 'Pending...'
+                                        : 'Accept'}
+                                </button>
+                                {acceptRequestError && (
+                                    <div>
+                                        Error: {acceptRequestError.message}{' '}
+                                    </div>
+                                )}
+                                <button
+                                    onClick={() =>
+                                        handleRejectRequest(request.id)
+                                    }
+                                >
+                                    {isRejectRequestLoading
+                                        ? 'Pending...'
+                                        : 'Reject'}
+                                </button>
+                                {rejectRequestError && (
+                                    <div>
+                                        Error: {rejectRequestError.message}{' '}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
