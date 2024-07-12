@@ -43,7 +43,6 @@ const UserProfile = () => {
     const friends = useSelector((state) => state.friends.friends);
 
     // --- Retrieve and set incoming friend requests --- //
-
     const { data: friendRequests, refetch: refetchFriendRequests } =
         useGetReceivedRequestsQuery();
     useEffect(() => {
@@ -61,7 +60,6 @@ const UserProfile = () => {
     // =============================CLICK HANDLERS================================
 
     // --- Remove Friend --- //
-
     const [
         removeFriend,
         { isLoading: isRemoveFriendLoading, error: removeFriendError },
@@ -76,7 +74,6 @@ const UserProfile = () => {
     };
 
     // --- Accept Request --- //
-
     const [
         acceptRequest,
         { isLoading: isAcceptRequestLoading, error: acceptRequestError },

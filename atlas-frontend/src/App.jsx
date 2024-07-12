@@ -7,8 +7,7 @@ import ProfileForm from './pages/ProfileForm';
 import LoginForm from './pages/LoginForm';
 import UserProfile from './pages/UserProfile';
 import BrowseProfiles from './pages/BrowseProfiles';
-// import ProfileDetail from './pages/ProfileDetail';
-import ProfileDetail from './pages/ProfileDetailRefactor';
+import ProfileDetail from './pages/ProfileDetail';
 import BeaconFeed from './pages/BeaconFeed';
 import BeaconMap from './pages/Map';
 

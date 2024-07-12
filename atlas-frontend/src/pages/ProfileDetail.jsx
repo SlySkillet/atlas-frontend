@@ -1,231 +1,285 @@
-import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import getCSRFToken from '../utils/auth';
+import { useState, useEffect } from 'react';
 import {
-    useGetSentRequestsQuery,
+    useGetFriendsQuery,
+    useRequestFriendMutation,
+    useRemoveFriendMutation,
+} from '../features/user/friendsApiService';
+import { setFriends } from '../features/user/friendsSlice';
+import { useDispatch } from 'react-redux';
+import {
     useGetReceivedRequestsQuery,
+    useGetSentRequestsQuery,
+    useCancelSentRequestMutation,
+    useAcceptRequestMutation,
+    useRejectRequestMutation,
 } from '../features/friendrequests/requestsApiService';
+import {
+    setSentRequests,
+    setReceivedRequests,
+} from '../features/friendrequests/friendRequestsSlice';
 
 const ProfileDetail = () => {
-    // REQUIRES LOGIN: need redirect logic for unauthenticated user
+    // RETRIEVE PROFILE: retrieve profile with useParams
     const [profile, setProfile] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [componentLoading, setComponentLoading] = useState(true);
     const { profileId } = useParams();
-    const user = useSelector((state) => state.user.user);
-    const [friend, setFriend] = useState(false);
-    const [isPending, setIsPending] = useState({
-        pending: false,
-        cancelRequestUrl: null,
-    });
-    const [isRequested, setIsRequested] = useState({
-        requested: false,
-        acceptRequestUrl: null,
-        rejectRequestUrl: null,
-    });
-    const { data: requestsPending, refetch: refetchSentRequests } =
-        useGetSentRequestsQuery();
-    const { data: requestsReceived, refetch: refetchReceivedRequests } =
-        useGetReceivedRequestsQuery();
 
-    // Fetch profile information
-    // Setup with RTKQuery
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:8000/api/profiles/${profileId}`,
+                    `http://localhost:8000/api/profiles/${profileId}/`,
                 );
                 if (response.ok) {
                     const profileData = await response.json();
                     setProfile(profileData);
-                } else {
-                    setError('Failed to fetch profile');
                 }
             } catch (error) {
-                return console.error('Error', error);
+                return console.error('error fetching profile:', error);
             } finally {
-                setLoading(false);
+                setComponentLoading(false);
             }
         };
         fetchProfile();
     }, [profileId]);
 
-    // Check if User is in Profile's friends list
-    useEffect(() => {
-        if (profile.friends) {
-            const friendsObj = {};
-            for (let f of profile.friends) {
-                friendsObj[f.profile_id] = f.username;
-            }
-            if (user.profile_id in friendsObj) {
-                setFriend(true);
-            }
-        }
-    }, [profile, user.profile_id]);
+    // CHECK FRIEND STATUS: check friend status with authenticated user
+    // query database
 
-    // Check if current user has sent a request to this profile
+    // NOTE: this can break off into another component to handle loading,
+    // and error to sepparate concerns.
+    const { data: friendsList, refetch: refetchFriendsList } =
+        useGetFriendsQuery();
+    const dispatch = useDispatch();
+    const [isFriend, setIsFriend] = useState(false);
+
+    // update store
+    useEffect(() => {
+        if (friendsList) {
+            dispatch(setFriends(friendsList));
+        }
+    }, [friendsList, dispatch]);
+
+    // check if current profile (viewed) is a friend of the user
+    useEffect(() => {
+        const checkFriendshipStatus = async () => {
+            if (friendsList) {
+                const friendIds = new Set(friendsList.map((f) => f.id));
+
+                // check friend request status with authenticated user
+                setIsFriend(friendIds.has(parseInt(profileId)));
+            } else {
+                setIsFriend(false);
+            }
+        };
+        checkFriendshipStatus();
+    }, [friendsList, profileId]);
+
+    // CHECK FRIEND REQUEST STATUS: check if user has either received or
+    // sent a request to this profile
+    // imports
+    const { data: requestsPending, refetch: refetchRequestsPending } =
+        useGetSentRequestsQuery();
+    const [isRequestPending, setIsRequestPending] = useState({
+        isPending: false,
+        cancelRequestId: null,
+    });
+
+    const { data: requestsReceived, refetch: refetchRequestsReceived } =
+        useGetReceivedRequestsQuery();
+    const [isRequestReceived, setIsRequestReceived] = useState({
+        isRequested: false,
+        requestId: null,
+    });
+
     useEffect(() => {
         if (requestsPending) {
-            for (let req of requestsPending) {
-                if (req.to_user_profile_id === parseInt(profileId)) {
-                    setIsPending({
-                        pending: true,
-                        cancelRequestUrl: req.request_detail,
-                    });
-                }
-            }
+            dispatch(setSentRequests(requestsPending));
         }
+    }, [requestsPending, dispatch]);
+
+    useEffect(() => {
+        const checkForSentRequest = async () => {
+            if (requestsPending) {
+                for (let req of requestsPending) {
+                    if (req.to_user_profile_id === parseInt(profileId)) {
+                        // NOTE FOR TESTING: check what happens with a large list
+                        // of pending requests where this conditional is met and
+                        // not met
+                        setIsRequestPending({
+                            isPending: true,
+                            cancelRequestId: req.id,
+                        });
+                        break;
+                    }
+                }
+            } else {
+                // NOTE FOR REFACTORING: test if this check is necessary
+                setIsRequestPending({
+                    isPending: false,
+                    cancelRequestId: null,
+                });
+            }
+        };
+        checkForSentRequest();
     }, [requestsPending, profileId]);
 
-    console.log('pending --> ', isPending);
-
-    // Check if this profile has requested current user
     useEffect(() => {
         if (requestsReceived) {
-            for (let req of requestsReceived) {
-                if (req.from_user_profile_id === parseInt(profileId)) {
-                    setIsRequested({
-                        requested: true,
-                        acceptRequestUrl: req.request_accept,
-                        rejectRequestUrl: req.request_reject,
-                    });
-                }
-            }
+            dispatch(setReceivedRequests(requestsReceived));
         }
+    });
+
+    useEffect(() => {
+        const checkForReceivedRequest = async () => {
+            if (requestsReceived) {
+                for (let req of requestsReceived) {
+                    if (req.from_user_profile_id === parseInt(profileId)) {
+                        setIsRequestReceived({
+                            isRequested: true,
+                            requestId: req.id,
+                        });
+                        break;
+                    }
+                }
+            } else {
+                setIsRequestReceived({
+                    isRequested: false,
+                    requestId: null,
+                });
+            }
+        };
+        checkForReceivedRequest();
     }, [requestsReceived, profileId]);
 
-    console.log('requested --> ', isRequested);
-
-    // BUTTONS AND CLICK HANDLERS
-    const handleAddFriend = async () => {
-        // create friend request instance in django
-        const csrfToken = getCSRFToken();
-        console.log(csrfToken);
-        const requestUrl = `http://localhost:8000/api/profiles/${profileId}/request-friend/`;
-        const fetchConfig = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            credentials: 'include',
-        };
-        const response = await fetch(requestUrl, fetchConfig);
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            refetchSentRequests();
-            // update profile state in store
-        }
-    };
-
-    const handleCancelRequest = async () => {
-        const csrfToken = getCSRFToken();
-        const requestUrl = isPending.cancelRequestUrl;
-        const fetchConfig = {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            credentials: 'include',
-        };
-        const response = await fetch(requestUrl, fetchConfig);
-        if (response.ok) {
-            console.log(response.status, 'request deleted');
-            setIsPending({
-                pending: false,
-                cancelRequestUrl: null,
-            });
-            refetchSentRequests();
-            // update profile state in store
-        }
-        console.log(response);
-    };
-
-    const handleAcceptRequest = async () => {
-        const csrfToken = getCSRFToken();
-        const requestUrl = isRequested.acceptRequestUrl;
-        const fetchConfig = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            credentials: 'include',
-        };
-        const response = await fetch(requestUrl, fetchConfig);
-        if (response.ok) {
-            console.log(response.status, 'request accepted');
-            setIsRequested({
-                pending: false,
-                acceptRequestUrl: null,
-                rejectRequestUrl: null,
-            });
-            refetchReceivedRequests();
-            setFriend(true);
-            // update profile state in store
-        }
-    };
-
-    // HANDLE REJECT REQUEST
-
-    const handleRejectRequest = async () => {
-        const csrfToken = getCSRFToken();
-        const requestUrl = isRequested.rejectRequestUrl;
-        const fetchConfig = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-        };
-        const response = await fetch(requestUrl, fetchConfig);
-        if (response.ok) {
-            console.log(response.status, 'request rejected');
-            setIsRequested({
-                pending: false,
-                acceptRequestUrl: null,
-                rejectRequestUrl: null,
-            });
-            refetchReceivedRequests();
-            setFriend(false);
-        }
-    };
-
-    const addFriendActionButton = (isPending, isRequested) => {
-        // Determines the action given to the user depending on the non-friend status.
-        // Function reads if a friend request for this profile exists and if the current
-        // user received the request or initiated the request. Actions to cancel a
-        // pending request, accept a received request, reject a received request, or create
-        // a new request are provided accordingly
-
-        if (isPending.pending) {
+    const renderNonFriendActionButton = (isRequestPending) => {
+        // Helper function to determine the appropriate action button depending on
+        // any existing friend requests for the user and the displayed profile
+        if (isRequestPending.isPending) {
             return (
                 <div>
-                    pending...{' '}
-                    <button onClick={handleCancelRequest}>cancel</button>
+                    pending...
+                    <button
+                        onClick={() =>
+                            handleCancelPendingRequest(
+                                isRequestPending.cancelRequestId,
+                            )
+                        }
+                    >
+                        cancel request
+                    </button>
                 </div>
             );
-        } else if (isRequested.requested) {
+        } else if (isRequestReceived.isRequested) {
             return (
                 <div>
-                    {profile.user.username} requested to add you as a friend.{' '}
-                    <button onClick={handleAcceptRequest}>accept</button>
-                    <button onClick={handleRejectRequest}>reject</button>
+                    <button
+                        onClick={() =>
+                            handleAcceptRequest(isRequestReceived.requestId)
+                        }
+                    >
+                        accept
+                    </button>{' '}
+                    <button
+                        onClick={() =>
+                            handleRejectRequest(isRequestReceived.requestId)
+                        }
+                    >
+                        reject
+                    </button>{' '}
                 </div>
             );
         } else {
-            return <button onClick={handleAddFriend}>add</button>;
+            return (
+                <button onClick={() => handleRequestFriend(profile.id)}>
+                    add friend
+                </button>
+            );
         }
     };
 
-    // PAGE RENDERING
+    //
 
-    if (loading) {
-        return <div>Loading...</div>;
+    // USER ACTION HANDLERS
+
+    // remove friend
+    const [removeFriend] = useRemoveFriendMutation();
+    const handleRemoveFriend = async (profileId) => {
+        try {
+            await removeFriend(profileId).unwrap();
+            refetchFriendsList();
+            setIsFriend(false);
+        } catch (error) {
+            console.error('Failed to remove friend', error);
+        }
+    };
+
+    // request friend
+    const [requestFriend] = useRequestFriendMutation();
+    const handleRequestFriend = async (profileId) => {
+        try {
+            await requestFriend(profileId).unwrap();
+            refetchRequestsPending();
+            setIsRequestPending({
+                isPending: false,
+                cancelRequestId: null,
+            });
+        } catch (error) {
+            console.error('Failed to add friend', error);
+        }
+    };
+
+    // cancel friend request (sent)
+    const [cancelSentRequest] = useCancelSentRequestMutation();
+    const handleCancelPendingRequest = async (reqId) => {
+        try {
+            await cancelSentRequest(reqId).unwrap();
+            refetchRequestsPending();
+            setIsRequestPending({
+                isPending: false,
+                cancelRequestId: null,
+            });
+        } catch (error) {
+            console.error('Failed to cancel request', error);
+        }
+    };
+
+    // accept friend request (received)
+    const [acceptRequest] = useAcceptRequestMutation();
+    const handleAcceptRequest = async (reqId) => {
+        try {
+            await acceptRequest(reqId).unwrap();
+            refetchFriendsList();
+            refetchRequestsReceived();
+            setIsRequestReceived({
+                isRequested: false,
+                requestId: null,
+            });
+            setIsFriend(true);
+        } catch (error) {
+            console.error('Failed to accept request', error);
+        }
+    };
+
+    // reject friend request (received)
+    const [rejectRequest] = useRejectRequestMutation();
+    const handleRejectRequest = async (reqId) => {
+        try {
+            await rejectRequest(reqId).unwrap();
+            refetchRequestsReceived();
+            setIsRequestReceived({
+                isRequested: false,
+                requestId: null,
+            });
+        } catch (error) {
+            console.error('Failed to reject request', error);
+        }
+    };
+
+    // RENDER PAGE
+    if (componentLoading) {
+        return <div>loading...</div>;
     }
     return (
         <div>
@@ -236,17 +290,14 @@ const ProfileDetail = () => {
             </div>
             <div>{profile.bio}</div>
             <div>
-                {friend ? (
-                    <button>remove</button>
+                {isFriend ? (
+                    <button onClick={() => handleRemoveFriend(profileId)}>
+                        remove
+                    </button>
                 ) : (
-                    addFriendActionButton(isPending, isRequested)
+                    renderNonFriendActionButton(isRequestPending)
                 )}
             </div>
-            {/* {friend ? (
-                <button>remove</button>
-            ) : (
-                <button onClick={handleAddFriend}>add</button>
-            )} */}
         </div>
     );
 };
