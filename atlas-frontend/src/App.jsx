@@ -10,6 +10,7 @@ import BrowseProfiles from './pages/BrowseProfiles';
 import ProfileDetail from './pages/ProfileDetail';
 import BeaconFeed from './pages/BeaconFeed';
 import BeaconMap from './pages/Map';
+import CreateBeaconForm from './pages/CreateBeaconForm';
 
 function App() {
     return (
@@ -29,6 +30,10 @@ function App() {
                     <Route
                         path="/profile/:profileId"
                         element={<ProfileDetail />}
+                    />
+                    <Route
+                        path="/create-beacon"
+                        element={<CreateBeaconForm />}
                     />
                     <Route path="/beaconfeed" element={<BeaconFeed />} />
                     <Route path="/map" element={<BeaconMap />} />

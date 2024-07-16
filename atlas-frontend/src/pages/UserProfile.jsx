@@ -185,10 +185,15 @@ const UserProfile = () => {
                     })}
                 </div>
             </div>
-            <h3>Beacons</h3>
-            <h5>Past</h5>
-            <h5>Live</h5>
-            <h5>Scheduled</h5>
+            <div>
+                <h3>Beacons</h3>
+                <button>
+                    <Link to="/create-beacon">Create a Beacon</Link>
+                </button>
+                <h5>Past</h5>
+                <h5>Live</h5>
+                <h5>Scheduled</h5>
+            </div>
         </div>
     );
 };
