@@ -1,3 +1,7 @@
 #root {
-  text-align: center;
+    text-align: center;
+}
+.map-container {
+    width: 300px;
+    height: 300px;
 }
