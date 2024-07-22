@@ -1,19 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-// import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 import mapboxgl from 'mapbox-gl';
 
 const CreateBeaconForm = () => {
-    // const mapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    // const mapId = import.meta.env.VITE_GOOGLE_MAP_ID;
-    // const center = { lat: 38.929526, lng: -76.989788 };
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
     const mapContainer = useRef(null);
     const map = useRef(null);
+    const marker = useRef(null);
 
     //   initialize state values,
-    const [lng, setLng] = useState(-76.994558);
-    const [lat, setLat] = useState(38.936673);
+    const [lng, setLng] = useState(-77.124813);
+    const [lat, setLat] = useState(38.92366);
     const [zoom, setZoom] = useState(12);
+    const [mapReady, setMapReady] = useState(false);
 
     // get user location
     useEffect(() => {
@@ -23,10 +21,11 @@ const CreateBeaconForm = () => {
                     const { latitude, longitude } = pos.coords;
                     setLng(longitude);
                     setLat(latitude);
-                    // console.log({ latitude, longitude });
+                    setMapReady(true);
                 },
                 (error) => {
                     console.error('Error obtaining location', error);
+                    setMapReady(true);
                 },
             );
         }
@@ -34,34 +33,54 @@ const CreateBeaconForm = () => {
 
     // initialize map
     useEffect(() => {
-        if (map.current) return;
+        if (map.current || !mapReady) return;
 
-        // create new instance of mapbox map
-        map.current = new mapboxgl.Map({
-            container: mapContainer.current,
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: [lng, lat],
-            zoom: zoom,
-        });
-    });
+        if (lat && lng) {
+            // create new instance of mapbox map
+            map.current = new mapboxgl.Map({
+                container: mapContainer.current,
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [lng, lat],
+                zoom: zoom,
+            });
 
-    // map.current.on('move', () => {
-    //     // uses map camera properties
-    //     const center = map.current.getCenter();
-    //     const zoom = map.current.getZoom();
+            map.current.on('move', () => {
+                // uses map camera properties
+                const center = map.current.getCenter();
+                const zoom = map.current.getZoom();
 
-    //     // updates state
-    //     setLng(center.lng);
-    //     setLat(center.lat);
-    //     setZoom(zoom);
-    // });
+                // updates state
+                setLng(center.lng);
+                setLat(center.lat);
+                setZoom(zoom);
+            });
+
+            map.current.on('click', (e) => {
+                const clickLng = e.lngLat.lng;
+                const clickLat = e.lngLat.lat;
+                console.log(e.lngLat);
+                if (marker.current) {
+                    marker.current.remove();
+                }
+                marker.current = new mapboxgl.Marker({
+                    color: '#44c55c',
+                })
+                    .setLngLat([clickLng, clickLat])
+                    .addTo(map.current);
+                setBeaconFormData((prevData) => ({
+                    ...prevData,
+                    location: { longitude: clickLng, latitude: clickLat },
+                }));
+            });
+        }
+    }, [lng, lat, zoom, mapReady]);
 
     const [beaconFormData, setBeaconFormData] = useState({
         description: '',
         start_time: new Date(),
         end_time: new Date(),
         capacity: 1,
-        location: { lat: null, lng: null },
+        location: { lng: null, lat: null },
         visibility: 'FRIENDS',
         visibility_polygon: null,
     });
@@ -78,21 +97,6 @@ const CreateBeaconForm = () => {
         event.preventDefault();
         console.log(beaconFormData);
     };
-
-    // ======================LOCATION SELECTION=======================
-
-    const [position, setPosition] = useState({});
-
-    // const handleMapClick = (event) => {
-    //     if (event.latLng) {
-    //         const lat = event.latLng.lat();
-    //         const lng = event.latLng.lng();
-    //         setPosition({ lat, lng });
-    //         console.log(position);
-    //     } else {
-    //         console.error('event.latLng is undefined');
-    //     }
-    // };
 
     return (
         <div>
@@ -152,22 +156,21 @@ const CreateBeaconForm = () => {
                         <option value="ALL">visible to all users</option>
                     </select>
                 </div>
-                <div ref={mapContainer} className="map-container" />
-                {/* <div style={{ height: '500px', width: '60%' }}>
-                    <APIProvider
-                        apiKey={mapsApiKey}
-                        onLoad={() => console.log('Maps API has loaded')}
-                    >
-                        <Map
-                            defaultZoom={13}
-                            defaultCenter={center}
-                            mapId={mapId}
-                            onClick={handleMapClick}
-                        >
-                            {position && <Marker position={position} />}
-                        </Map>
-                    </APIProvider>
-                </div> */}
+                <div>
+                    {mapReady ? (
+                        <div
+                            ref={mapContainer}
+                            className="map-container"
+                            style={{ width: '100%', height: '400px' }}
+                        />
+                    ) : (
+                        <div>Loading map...</div>
+                    )}
+                </div>
+                <div>
+                    {beaconFormData.location.longitude},{' '}
+                    {beaconFormData.location.latitude}
+                </div>
                 <button>create beacon</button>
             </form>
         </div>
