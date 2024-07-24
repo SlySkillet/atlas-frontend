@@ -34,7 +34,7 @@ const Header = () => {
     };
     return (
         <div className="header-container">
-            <h1>Hoppin</h1>
+            <h1 className="text-3xl font-bold underline">Hoppin</h1>
             {user ? (
                 <>
                     <p>{user.username}</p>
