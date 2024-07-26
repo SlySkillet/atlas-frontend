@@ -9,7 +9,8 @@ import UserProfile from './pages/UserProfile';
 import BrowseProfiles from './pages/BrowseProfiles';
 import ProfileDetail from './pages/ProfileDetail';
 import BeaconFeed from './pages/BeaconFeed';
-import BeaconMap from './pages/Map';
+// import BeaconMap from './pages/Map';
+import NewMap from './pages/MapNew';
 import CreateBeaconForm from './pages/CreateBeaconForm';
 import Footer from './components/Footer';
 
@@ -18,7 +19,7 @@ function App() {
         <div className="grid max-h-screen min-h-screen grid-rows-[auto_1fr_auto]">
             <BrowserRouter>
                 <Header />
-                <main className="overflow-y-auto p-4">
+                <main className="overflow-y-auto">
                     <Routes>
                         <Route path="/" element={<Welcome />} />
                         <Route path="/signup" element={<SignupForm />} />
@@ -41,7 +42,8 @@ function App() {
                             element={<CreateBeaconForm />}
                         />
                         <Route path="/beaconfeed" element={<BeaconFeed />} />
-                        <Route path="/map" element={<BeaconMap />} />
+                        {/* <Route path="/map" element={<BeaconMap />} /> */}
+                        <Route path="/map" element={<NewMap />} />
                     </Routes>
                 </main>
                 <Footer />
