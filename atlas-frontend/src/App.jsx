@@ -11,33 +11,40 @@ import ProfileDetail from './pages/ProfileDetail';
 import BeaconFeed from './pages/BeaconFeed';
 import BeaconMap from './pages/Map';
 import CreateBeaconForm from './pages/CreateBeaconForm';
+import Footer from './components/Footer';
 
 function App() {
     return (
-        <div className="container">
+        <div className="grid max-h-screen min-h-screen grid-rows-[auto_1fr_auto]">
             <BrowserRouter>
                 <Header />
-                <Routes>
-                    <Route path="/" element={<Welcome />} />
-                    <Route path="/signup" element={<SignupForm />} />
-                    <Route path="/create-profile" element={<ProfileForm />} />
-                    <Route path="/login" element={<LoginForm />} />
-                    <Route path="/myprofile" element={<UserProfile />} />
-                    <Route
-                        path="/browse-profiles"
-                        element={<BrowseProfiles />}
-                    />
-                    <Route
-                        path="/profile/:profileId"
-                        element={<ProfileDetail />}
-                    />
-                    <Route
-                        path="/create-beacon"
-                        element={<CreateBeaconForm />}
-                    />
-                    <Route path="/beaconfeed" element={<BeaconFeed />} />
-                    <Route path="/map" element={<BeaconMap />} />
-                </Routes>
+                <main className="overflow-y-auto p-4">
+                    <Routes>
+                        <Route path="/" element={<Welcome />} />
+                        <Route path="/signup" element={<SignupForm />} />
+                        <Route
+                            path="/create-profile"
+                            element={<ProfileForm />}
+                        />
+                        <Route path="/login" element={<LoginForm />} />
+                        <Route path="/myprofile" element={<UserProfile />} />
+                        <Route
+                            path="/browse-profiles"
+                            element={<BrowseProfiles />}
+                        />
+                        <Route
+                            path="/profile/:profileId"
+                            element={<ProfileDetail />}
+                        />
+                        <Route
+                            path="/create-beacon"
+                            element={<CreateBeaconForm />}
+                        />
+                        <Route path="/beaconfeed" element={<BeaconFeed />} />
+                        <Route path="/map" element={<BeaconMap />} />
+                    </Routes>
+                </main>
+                <Footer />
             </BrowserRouter>
         </div>
     );

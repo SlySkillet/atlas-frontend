@@ -33,7 +33,7 @@ const Header = () => {
         }
     };
     return (
-        <div className="header-container">
+        <div className="container mx-auto flex flex-wrap justify-start md:col-span-2 lg:col-span-3 xl:col-span-4">
             <h1 className="text-3xl font-bold underline">Hoppin</h1>
             {user ? (
                 <>
@@ -41,7 +41,8 @@ const Header = () => {
                     <button className="button" onClick={handleLogout}>
                         Logout
                     </button>
-                    <a className="button" href="/myprofile">
+                    {/* PREV HEADERS - Links now contained in footer.jsx */}
+                    {/* <a className="button" href="/myprofile">
                         my profile
                     </a>
                     <a className="button" href="/browse-profiles">
@@ -52,7 +53,7 @@ const Header = () => {
                     </a>
                     <a className="button" href="/map">
                         map
-                    </a>
+                    </a> */}
                 </>
             ) : (
                 <>

@@ -25,7 +25,7 @@ const BrowseProfiles = () => {
     }, []);
     console.log(profiles);
     return (
-        <div>
+        <div className="overflow-y-auto">
             <h1>Profiles</h1>
             <table>
                 <thead>
