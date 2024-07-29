@@ -50,7 +50,6 @@ const NewMap = () => {
     const [beacons, setBeacons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [points, setPoints] = useState([]);
 
     useEffect(() => {
         const fetchBeacons = async () => {
@@ -80,30 +79,22 @@ const NewMap = () => {
             }
         };
         fetchBeacons();
-    }, [beacons, error]);
+    }, [error]);
+    console.log('beacons ==> ', beacons);
 
+    // NOTE: test --> if user has no visible beacons then...
     useEffect(() => {
-        const beaconLocations = [];
-        for (let b of beacons) {
-            const beaconObj = { key: b.id, location: b.location };
-            beaconLocations.push(beaconObj);
-        }
-        setPoints(beaconLocations);
-    }, [beacons]);
-
-    // ISSUE: points are rendered with only location data
-    // These need to be tied in with all beacon data
-    useEffect(() => {
-        if (!map.current || points.length === 0) return;
+        if (!map.current || beacons.length === 0) return;
 
         if (!loading) {
-            points.forEach((point) => {
+            console.log(typeof beacons);
+            beacons.forEach((beacon) => {
                 new mapboxgl.Marker()
-                    .setLngLat([point.location.lng, point.location.lat])
+                    .setLngLat([beacon.location.lng, beacon.location.lat])
                     .addTo(map.current);
             });
         }
-    }, [points, loading]);
+    }, [beacons, loading]);
 
     // ============================= RENDER PAGE ==============================
     return (
