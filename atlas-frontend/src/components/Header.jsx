@@ -58,7 +58,10 @@ const Header = () => {
                     {menuOpen && (
                         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4">
                             <div className="bg-mine-shaft-800 rounded-lg shadow-lg">
-                                <p className="border-b p-4 pl-20 pr-20 text-white">
+                                <p
+                                    className="border-b p-4 pl-20 pr-20 text-white"
+                                    onClick={handleLogout}
+                                >
                                     Logout
                                 </p>
                                 <p className="border-b p-4 pl-20 pr-20 text-white">
