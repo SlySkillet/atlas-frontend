@@ -46,6 +46,7 @@ const NewMap = () => {
         }
     }, [lng, lat, zoom, mapReady]);
 
+    // ============================ PLACE BEACONS =============================
     // retrieve Beacons
     const [beacons, setBeacons] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -80,34 +81,57 @@ const NewMap = () => {
         };
         fetchBeacons();
     }, [error]);
-    console.log('beacons ==> ', beacons);
 
+    // Add marker to map for each beacon
     // NOTE: test --> if user has no visible beacons then...
+
+    // state for beacon popup
+    const [beaconPopUp, setBeaconPopUp] = useState({
+        isOpen: false,
+        data: null,
+    });
+
     useEffect(() => {
-        if (!map.current || beacons.length === 0) return;
+        if (!map.current || !beacons) return;
 
         if (!loading) {
-            console.log(typeof beacons);
             beacons.forEach((beacon) => {
-                new mapboxgl.Marker()
+                const marker = new mapboxgl.Marker()
                     .setLngLat([beacon.location.lng, beacon.location.lat])
                     .addTo(map.current);
+
+                console.log(marker);
+                // Add click event listener to marker
+                marker.getElement().addEventListener('click', () => {
+                    console.log('bcnDescription --> ', beacon);
+                    setBeaconPopUp({ isOpen: true, data: beacon });
+                });
             });
         }
     }, [beacons, loading]);
 
     // ============================= RENDER PAGE ==============================
     return (
-        // BUG: not rendering snuggly between rows 2 and 3
-        <div className="">
+        <div className="row-start-2 row-end-3 grid h-full flex-col">
             {mapReady ? (
                 <div
                     ref={mapContainer}
-                    className="map-container"
-                    style={{ width: '100%', height: '100vh' }}
+                    className="map-container h-full w-full"
                 />
             ) : (
                 <div>Loading map...</div>
+            )}
+            {beaconPopUp.isOpen && (
+                <div className="absolute z-50 h-[60%] w-full self-end justify-self-center bg-mine-shaft-700 text-white">
+                    <p>{beaconPopUp.data.description}</p>
+                    <button
+                        onClick={() =>
+                            setBeaconPopUp({ isOpen: false, data: null })
+                        }
+                    >
+                        close
+                    </button>
+                </div>
             )}
         </div>
     );

@@ -16,7 +16,7 @@ import Footer from './components/Footer';
 
 function App() {
     return (
-        <div className="grid max-h-screen min-h-screen grid-rows-[auto_1fr_auto]">
+        <div className="grid h-screen grid-rows-[auto_1fr_auto]">
             <BrowserRouter>
                 <Header />
                 <main className="overflow-y-auto">
