@@ -1,6 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { useEffect, useRef, useState } from 'react';
 import getCSRFToken from '../utils/auth';
+import { FaChevronDown } from 'react-icons/fa';
 
 const NewMap = () => {
     // MapBox initialize
@@ -130,6 +131,7 @@ const NewMap = () => {
             {beaconPopUp.isOpen && (
                 <div className="absolute z-50 h-[60%] w-full self-end justify-self-center rounded-t-lg bg-mine-shaft-900 text-white">
                     <button
+                        className="rounded-b-lg bg-mine-shaft-950 pb-1 pl-14 pr-14 pt-1 text-xl text-mine-shaft-300"
                         onClick={() => {
                             map.current.flyTo({
                                 center: [
@@ -142,7 +144,7 @@ const NewMap = () => {
                                 setBeaconPopUp({ isOpen: false, data: null });
                         }}
                     >
-                        -------
+                        <FaChevronDown />
                     </button>
                     <p>{beaconPopUp.data.description}</p>
                 </div>
