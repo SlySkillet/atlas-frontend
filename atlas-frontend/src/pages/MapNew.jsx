@@ -105,6 +105,12 @@ const NewMap = () => {
                 marker.getElement().addEventListener('click', () => {
                     console.log('bcnDescription --> ', beacon);
                     setBeaconPopUp({ isOpen: true, data: beacon });
+                    map.current.flyTo({
+                        center: [beacon.location.lng, beacon.location.lat],
+                        offset: [0, -200],
+                        essential: true,
+                        zoom: 15,
+                    });
                 });
             });
         }
@@ -122,15 +128,23 @@ const NewMap = () => {
                 <div>Loading map...</div>
             )}
             {beaconPopUp.isOpen && (
-                <div className="absolute z-50 h-[60%] w-full self-end justify-self-center bg-mine-shaft-700 text-white">
-                    <p>{beaconPopUp.data.description}</p>
+                <div className="absolute z-50 h-[60%] w-full self-end justify-self-center rounded-t-lg bg-mine-shaft-900 text-white">
                     <button
-                        onClick={() =>
-                            setBeaconPopUp({ isOpen: false, data: null })
-                        }
+                        onClick={() => {
+                            map.current.flyTo({
+                                center: [
+                                    beaconPopUp.data.location.lng,
+                                    beaconPopUp.data.location.lat,
+                                ],
+                                zoom: 14,
+                                essential: true,
+                            }),
+                                setBeaconPopUp({ isOpen: false, data: null });
+                        }}
                     >
-                        close
+                        -------
                     </button>
+                    <p>{beaconPopUp.data.description}</p>
                 </div>
             )}
         </div>
